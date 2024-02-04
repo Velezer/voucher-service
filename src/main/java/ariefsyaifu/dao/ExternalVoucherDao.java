@@ -16,7 +16,10 @@ public class ExternalVoucherDao {
 
     @Transactional
     @TransactionConfiguration(timeout = 30)
-    public VoucherHistory redeem(String voucherHistoryId, String userId, BigDecimal voucherAmount,
+    public VoucherHistory redeem(
+            String voucherHistoryId,
+            String userId,
+            BigDecimal voucherAmount,
             String transactionId) {
         VoucherHistory vh = VoucherHistory.findById(voucherHistoryId, LockModeType.PESSIMISTIC_WRITE);
         if (vh == null) {
@@ -37,7 +40,7 @@ public class ExternalVoucherDao {
             throw new HttpException(400, "QTY_REDEEM_RUNGGING_OUT");
         }
 
-        Voucher v = Voucher.findById(vh.id, LockModeType.PESSIMISTIC_WRITE);
+        Voucher v = Voucher.findById(vh.voucher.id, LockModeType.PESSIMISTIC_WRITE);
         v.qtyRedeemed += 1;
         v.persist();
 

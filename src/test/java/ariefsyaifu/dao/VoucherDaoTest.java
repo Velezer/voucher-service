@@ -92,7 +92,7 @@ class VoucherDaoTest {
         String vid = v.id;
         for (int i = 0; i < attempt; i++) {
             me.execute(() -> {
-                voucherDao.claim(vid, userId, userName);
+                voucherDao.claim(vid, userId, userName, null, null);
                 count.incrementAndGet();
             });
         }

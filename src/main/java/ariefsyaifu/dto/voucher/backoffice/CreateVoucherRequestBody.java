@@ -53,6 +53,7 @@ public class CreateVoucherRequestBody {
     public LocalDateTime validFrom;
     
     @NotNull
+    @Schema(example = "2025-03-10T12:15:50")
     public LocalDateTime validTo;
 
     public String imageUrl;
@@ -73,7 +74,9 @@ public class CreateVoucherRequestBody {
 
     public List<OutletDto> voucherOutlets;
 
+    @Schema(example = "[\"FEB\"]")
     public List<String> voucherTags;
-
+    
+    @Schema(example = "[\"GOLDEN\"]")
     public List<String> tiers;
 }

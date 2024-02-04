@@ -122,12 +122,15 @@ public class VoucherService {
     public ViewClaimVoucherOas claim(String voucherId, JsonObject joCustomId) {
         String userId = Optional.ofNullable(joCustomId.getString("userId")).orElse("");
         String userName = joCustomId.getString("userName");
+        String tierId = joCustomId.getString("tierId");
 
         if (userId.isBlank()) {
             throw new HttpException(403, "FORBIDDEN");
         }
 
-        VoucherHistory vh = voucherDAO.claim(voucherId, userId, userName);
+        List<String> tagIds = tagService.getTagIds(userId);
+
+        VoucherHistory vh = voucherDAO.claim(voucherId, userId, userName, tierId, tagIds);
         return ViewClaimVoucherOas.valueOf(vh);
     }
 

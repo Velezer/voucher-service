@@ -19,6 +19,6 @@ public class InternalTagController {
     @Path("/")
     public Response list(
             @QueryParam("userId") String userId) {
-        return Response.ok(List.of("FEBRUARI")).build();
+        return Response.ok(List.of("FEBRUARI", "FEB")).build();
     }
 }

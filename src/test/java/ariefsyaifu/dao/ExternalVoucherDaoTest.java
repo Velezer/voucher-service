@@ -1,41 +1,33 @@
-package ariefsyaifu.controller;
+package ariefsyaifu.dao;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import ariefsyaifu.client.TagClient;
 import ariefsyaifu.model.Voucher;
-import ariefsyaifu.model.VoucherHistory;
 import ariefsyaifu.model.Voucher.ModeType;
 import ariefsyaifu.model.Voucher.Status;
 import ariefsyaifu.model.Voucher.TransactionType;
 import ariefsyaifu.model.Voucher.Type;
 import ariefsyaifu.model.Voucher.UsedDayType;
+import ariefsyaifu.model.VoucherHistory;
 import ariefsyaifu.util.DateUtil;
-import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import net.bytebuddy.utility.RandomString;
 
 @QuarkusTest
-class VoucherController_MaxRedeemedCount_Test {
+class ExternalVoucherDaoTest {
 
-    @InjectMock
-    @RestClient
-    TagClient tagClient;
+    @Inject
+    ExternalVoucherDao externalVoucherDao;
 
     String userId = RandomString.make();
+    String transactionId = RandomString.make();
 
     @BeforeEach
     @Transactional
@@ -57,26 +49,21 @@ class VoucherController_MaxRedeemedCount_Test {
         v.validTo = DateUtil.now().plusDays(1);
         v.imageUrl = RandomString.make();
         v.detail = RandomString.make();
-        v.qtyClaim = 2l;
-        v.qtyClaimed = 0l;
-        v.qtyRedeem = 2l;
+        v.qtyClaim = 1l;
+        v.qtyClaimed = 1l;
+        v.qtyRedeem = 1l;
         v.qtyRedeemed = 0l;
         v.extendValidToInDays = 0;
         v.status = Status.ACTIVE;
         v.persist();
 
-        VoucherHistory vhRedeemed = new VoucherHistory();
-        vhRedeemed.type = VoucherHistory.Type.REDEEMED;
-        vhRedeemed.userId = userId;
-        vhRedeemed.voucher = v;
-        vhRedeemed.voucherCode = RandomString.make();
-        vhRedeemed.persist();
-
         VoucherHistory vh = new VoucherHistory();
-        vh.type = VoucherHistory.Type.AVAILABLE;
+        vh.type = VoucherHistory.Type.CLAIMED;
         vh.voucher = v;
+        vh.userId = userId;
         vh.voucherCode = RandomString.make();
         vh.persist();
+
     }
 
     @AfterEach
@@ -87,27 +74,23 @@ class VoucherController_MaxRedeemedCount_Test {
     }
 
     @Test
-    void testClaim_MaxRedeemedCount() {
-        Assertions.assertEquals(1, Voucher.count());
-        Assertions.assertEquals(2, VoucherHistory.count());
+    void testRedeem() {
+        Assertions.assertEquals(1, VoucherHistory.count());
+        VoucherHistory vh = VoucherHistory.findAll().firstResult();
+        Assertions.assertEquals(VoucherHistory.Type.CLAIMED, vh.type);
+        Assertions.assertEquals(userId, vh.userId);
+        Assertions.assertEquals(0, vh.voucher.qtyRedeemed);
+        
+        externalVoucherDao.redeem(vh.id, userId, vh.voucher.amount, transactionId);
+        
+        VoucherHistory.getEntityManager().clear();
+        Assertions.assertEquals(1, VoucherHistory.count());
+        vh = VoucherHistory.findAll().firstResult();
+        Assertions.assertEquals(VoucherHistory.Type.REDEEMED, vh.type);
+        Assertions.assertEquals(userId, vh.userId);
+        Assertions.assertEquals(transactionId, vh.transactionId);
+        Assertions.assertEquals(vh.voucher.amount, vh.voucherAmount);
+        Assertions.assertEquals(1, vh.voucher.qtyRedeemed);
 
-        Voucher v = Voucher.findAll().firstResult();
-        Assertions.assertEquals(1, v.maxRedeemedCount);
-
-        Mockito.when(tagClient.getTags(Mockito.any()))
-                .thenReturn(List.of());
-
-        Response rd = RestAssured
-                .given()
-                .contentType(ContentType.JSON)
-                .header("X-Consumer-Custom-ID", new JsonObject().put("userId", userId).encode())
-                .post("/api/v1/voucher/{id}/claim", v.id)
-                .andReturn();
-
-        Assertions.assertEquals(400, rd.getStatusCode());
-        JsonObject rdas = new JsonObject(rd.asString());
-
-        Assertions.assertEquals("CANNOT_CLAIM_ANYMORE", rdas.getString("message"));
     }
-
 }

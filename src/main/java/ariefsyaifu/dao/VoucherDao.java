@@ -1,16 +1,11 @@
 package ariefsyaifu.dao;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import ariefsyaifu.dto.voucher.ViewVoucherRewardOas;
-import ariefsyaifu.dto.voucher.backoffice.ViewVoucherOas;
 import ariefsyaifu.model.Voucher;
-import ariefsyaifu.model.Voucher.UsedDayType;
 import ariefsyaifu.model.VoucherHistory;
 import ariefsyaifu.util.DateUtil;
 import ariefsyaifu.util.FormatUtil;
@@ -55,7 +50,7 @@ public class VoucherDao {
 
     @Transactional
     @TransactionConfiguration(timeout = 30)
-    public VoucherHistory claim(String vid, String userId, String userName) {
+    public VoucherHistory claim(String vid, String userId, String userName, String tierId, List<String> tagIds) {
         Voucher v = Voucher.findById(vid, LockModeType.PESSIMISTIC_WRITE);
         if (v == null) {
             throw new HttpException(400, "VOUCHER_NOT_FOUND");
@@ -63,16 +58,28 @@ public class VoucherDao {
         if (!v.isActive()) {
             throw new HttpException(400, "VOUCHER_NOT_ACTIVE");
         }
-        if (v.qtyClaimed >= v.qtyClaim) {
-            throw new HttpException(400, "VOUCHER_RUNNING_OUT");
-        }
 
         VoucherHistory vhClaimed = VoucherHistory
-                .find("voucher.id = ?1 and type='CLAIMED'", v.id)
+                .find("voucher.id = ?1 and type='CLAIMED' and userId = ?2", v.id, userId)
                 .withLock(LockModeType.PESSIMISTIC_WRITE)
                 .firstResult();
         if (vhClaimed != null) {
             return vhClaimed;
+        }
+
+        if (v.qtyClaimed >= v.qtyClaim) {
+            throw new HttpException(400, "VOUCHER_RUNNING_OUT");
+        }
+        if (!v.tiers.isEmpty()) {
+            if (v.tiers.stream().noneMatch(vt -> vt.tierId.equalsIgnoreCase(tierId))) {
+                throw new HttpException(400, "TIER_NOT_PERMITTED");
+            }
+        }
+        if (!v.tags.isEmpty()) {
+            if (v.tags.stream().noneMatch(vt -> Optional.ofNullable(tagIds).orElse(List.of()).stream()
+                    .anyMatch(tid -> tid.equalsIgnoreCase(vt.tagId)))) {
+                throw new HttpException(400, "TAG_NOT_PERMITTED");
+            }
         }
 
         VoucherHistory vh = VoucherHistory
@@ -184,14 +191,14 @@ public class VoucherDao {
             oas.maxDiscount = (BigDecimal) o[8];
             oas.modeType = o[9] == null ? null : Voucher.ModeType.valueOf((String) o[9]);
             oas.minSubtotal = (BigDecimal) o[10];
-            oas.maxRedeemedCount = o[11] == null ? null : ((BigInteger) o[11]).intValue();
+            oas.maxRedeemedCount = o[11] == null ? null : ((Integer) o[11]);
             oas.usedDayType = o[12] == null ? null : Voucher.UsedDayType.valueOf((String) o[12]);
             oas.validFrom = o[13] == null ? null : ((Timestamp) o[13]).toLocalDateTime();
             oas.validTo = o[14] == null ? null : ((Timestamp) o[14]).toLocalDateTime();
             oas.imageUrl = (String) o[15];
             oas.detail = (String) o[16];
-            oas.extendValidToInDays = o[17] == null ? null : ((BigInteger) o[17]).intValue();
-            oas.qtyClaim = o[18] == null ? null : ((BigInteger) o[18]).longValue();
+            oas.extendValidToInDays = o[17] == null ? null : ((Integer) o[17]);
+            oas.qtyClaim = o[18] == null ? null : ((Long) o[18]);
             return oas;
         }).toList();
     }

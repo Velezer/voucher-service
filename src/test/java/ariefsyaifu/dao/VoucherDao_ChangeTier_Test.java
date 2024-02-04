@@ -1,42 +1,41 @@
-package ariefsyaifu.controller;
+package ariefsyaifu.dao;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import ariefsyaifu.client.TagClient;
-import ariefsyaifu.dto.voucher.ViewClaimVoucherOas;
 import ariefsyaifu.model.Voucher;
-import ariefsyaifu.model.VoucherHistory;
 import ariefsyaifu.model.Voucher.ModeType;
 import ariefsyaifu.model.Voucher.Status;
 import ariefsyaifu.model.Voucher.TransactionType;
 import ariefsyaifu.model.Voucher.Type;
 import ariefsyaifu.model.Voucher.UsedDayType;
+import ariefsyaifu.model.VoucherHistory;
+import ariefsyaifu.model.VoucherTier;
 import ariefsyaifu.util.DateUtil;
-import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import net.bytebuddy.utility.RandomString;
 
 @QuarkusTest
-class VoucherControllerTest {
+class VoucherDao_ChangeTier_Test {
+
+    @Inject
+    VoucherDao voucherDao;
+
+    @Inject
+    ManagedExecutor me;
 
     String userId = RandomString.make();
+    String userName = RandomString.make();
 
-    @InjectMock
-    @RestClient
-    TagClient tagClient;
+    String tierId0 = RandomString.make();
+    String tierId1 = RandomString.make();
 
     @BeforeEach
     @Transactional
@@ -73,37 +72,45 @@ class VoucherControllerTest {
             vh.voucherCode = RandomString.make();
             vh.persist();
         }
+
+        VoucherTier vt = new VoucherTier();
+        vt.voucher = v;
+        vt.tierId = tierId0;
+        vt.persist();
+
     }
 
     @AfterEach
     @Transactional
     void afterEach() {
+        VoucherTier.deleteAll();
         VoucherHistory.deleteAll();
         Voucher.deleteAll();
     }
 
     @Test
-    void testClaim() {
+    void testClaim_ChangeTier() {
         Assertions.assertEquals(1, Voucher.count());
-        Assertions.assertEquals(2, VoucherHistory.count());
-
+        Assertions.assertEquals(2, VoucherHistory.count("type='AVAILABLE'"));
         Voucher v = Voucher.findAll().firstResult();
-        Assertions.assertEquals(1, v.maxRedeemedCount);
+        Assertions.assertEquals(0, v.qtyClaimed);
 
-        Mockito.when(tagClient.getTags(Mockito.any())).thenReturn(List.of());
+        VoucherHistory vh0 = voucherDao.claim(v.id, userId, userName, tierId0, null);
+        VoucherHistory vh1 = voucherDao.claim(v.id, userId, userName, tierId1, null);
+        VoucherHistory vh2 = voucherDao.claim(v.id, userId, userName, null, null);
 
-        Response r = RestAssured
-                .given()
-                .contentType(ContentType.JSON)
-                .header("X-Consumer-Custom-ID", new JsonObject().put("userId", userId).encode())
-                .post("/api/v1/voucher/{id}/claim", v.id)
-                .andReturn();
+        Assertions.assertEquals(vh0.id, vh1.id);
+        Assertions.assertEquals(vh0.voucherCode, vh1.voucherCode);
+        Assertions.assertEquals(vh0.id, vh2.id);
+        Assertions.assertEquals(vh0.voucherCode, vh2.voucherCode);
 
-        Assertions.assertEquals(200, r.getStatusCode());
+        Assertions.assertEquals(1, VoucherHistory.count("type='AVAILABLE'"));
+        Assertions.assertEquals(1, VoucherHistory.count("type='CLAIMED'"));
 
-        ViewClaimVoucherOas ras = r.as(ViewClaimVoucherOas.class);
-        VoucherHistory vh = VoucherHistory.find("type='CLAIMED'").firstResult();
-        Assertions.assertEquals(vh.voucherCode, ras.voucherCode);
+        Voucher.getEntityManager().clear();
+        Assertions.assertEquals(1, Voucher.count());
+        v = Voucher.findAll().firstResult();
+        Assertions.assertEquals(1, v.qtyClaimed);
+
     }
-
 }
