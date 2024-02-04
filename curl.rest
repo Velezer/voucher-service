@@ -1,0 +1,38 @@
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/backoffice/voucher' \
+  -H 'Authorization: Bearer asdada' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "prefixCode": "string",
+  "name": "string",
+  "type": "AMOUNT",
+  "amount": 0,
+  "transactionType": "FIRST_VOUCHER",
+  "quota": 0,
+  "maxDiscount": 0,
+  "modeType": "DINE_IN",
+  "minSubtotal": 0,
+  "maxRedeemedCount": 0,
+  "usedDayType": "EVERYDAY",
+  "expiredDays": 0,
+  "validFrom": "2022-03-10T12:15:50",
+  "validTo": "2022-03-10T12:15:50",
+  "imageUrl": "string",
+  "detail": "string",
+  "qtyClaim": 0,
+  "qtyRedeem": 0,
+  "extendValidToInDays": 0,
+  "status": "ACTIVE",
+  "voucherOutlets": [
+    {
+      "id": "string",
+      "name": "string"
+    }
+  ],
+  "voucherTags": [
+    "string"
+  ],
+  "tiers": [
+    "string"
+  ]
+}'
