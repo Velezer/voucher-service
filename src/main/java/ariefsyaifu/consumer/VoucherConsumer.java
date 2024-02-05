@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.kafka.common.KafkaException;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ariefsyaifu.dao.VoucherDao;
 import ariefsyaifu.dto.voucher.external.RedeemVoucherRequestBody;
@@ -14,6 +17,7 @@ import ariefsyaifu.service.external.ExternalVoucherService;
 import io.smallrye.reactive.messaging.annotations.Blocking;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.handler.HttpException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
@@ -21,6 +25,7 @@ import jakarta.validation.Validator;
 
 @ApplicationScoped
 public class VoucherConsumer {
+	private static final Logger logger = LoggerFactory.getLogger(VoucherConsumer.class);
 
 	@Inject
 	public VoucherConsumer(
@@ -40,6 +45,7 @@ public class VoucherConsumer {
 	@Blocking
 	@Retry(delay = 1000, abortOn = AbortException.class)
 	public void claimVoucher(String message) {
+		logger.info("claimVoucher message={}", message);
 		JsonObject payload = new JsonObject(message);
 		String voucherId = payload.getString("voucherId");
 		String userId = payload.getString("userId");
@@ -49,7 +55,11 @@ public class VoucherConsumer {
 				.ofNullable(payload.getJsonArray("tagIds"))
 				.orElse(new JsonArray())
 				.getList();
-		voucherDao.claim(voucherId, userId, userName, tierId, tagIds);
+		try {
+			voucherDao.claim(voucherId, userId, userName, tierId, tagIds, true);
+		} catch (HttpException e) {
+			throw new KafkaException(e.getPayload());
+		}
 	}
 
 	@Incoming("redeem-voucher-in")

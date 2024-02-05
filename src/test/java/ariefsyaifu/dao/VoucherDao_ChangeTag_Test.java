@@ -96,10 +96,10 @@ class VoucherDao_ChangeTag_Test {
         Voucher v = Voucher.findAll().firstResult();
         Assertions.assertEquals(0, v.qtyClaimed);
 
-        VoucherHistory vh0 = voucherDao.claim(v.id, userId, userName, null, List.of(tagId0));
-        VoucherHistory vh1 = voucherDao.claim(v.id, userId, userName, null, List.of(tagId1));
-        VoucherHistory vh2 = voucherDao.claim(v.id, userId, userName, null, List.of());
-        VoucherHistory vh3 = voucherDao.claim(v.id, userId, userName, null, null);
+        VoucherHistory vh0 = voucherDao.claim(v.id, userId, userName, null, List.of(tagId0), false);
+        VoucherHistory vh1 = voucherDao.claim(v.id, userId, userName, null, List.of(tagId1), false);
+        VoucherHistory vh2 = voucherDao.claim(v.id, userId, userName, null, List.of(), false);
+        VoucherHistory vh3 = voucherDao.claim(v.id, userId, userName, null, null, false);
 
         Assertions.assertEquals(vh0.id, vh1.id);
         Assertions.assertEquals(vh0.voucherCode, vh1.voucherCode);

@@ -52,6 +52,8 @@ public class ViewVoucherRewardOas {
 
     public List<OutletDto> outlets;
 
+    public boolean isHidden;
+
     public static List<ViewVoucherRewardOas> valueOf(
             List<ViewVoucherRewardOas> vouchers,
             Map<String, List<VoucherOutlet>> mapVos) {

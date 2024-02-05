@@ -120,7 +120,7 @@ public class BackofficeVoucherController {
             @APIResponse(responseCode = "500", description = "INTERNAL SERVER ERROR", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorOas.class)))
     })
     public Response update(
-            @Parameter(hidden = true) @HeaderParam("X-Consumer-Custom-ID") JsonObject customId,
+            @Parameter(hidden = false) @HeaderParam("X-Consumer-Custom-ID") JsonObject customId,
             @Parameter(required = true) @PathParam("id") String id,
             UpdateVoucherRequestBody request) {
         String userId = customId.getString("userId");

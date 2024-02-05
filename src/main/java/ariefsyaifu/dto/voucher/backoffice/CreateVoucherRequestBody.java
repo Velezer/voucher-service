@@ -52,6 +52,9 @@ public class CreateVoucherRequestBody {
     @NotNull
     public Voucher.UsedDayType usedDayType;
 
+    @Schema(example = "false")
+    public boolean isHidden;
+
     @NotNull
     @Schema(example = "2024-02-04T12:15:50")
     public LocalDateTime validFrom;

@@ -95,9 +95,9 @@ class VoucherDao_ChangeTier_Test {
         Voucher v = Voucher.findAll().firstResult();
         Assertions.assertEquals(0, v.qtyClaimed);
 
-        VoucherHistory vh0 = voucherDao.claim(v.id, userId, userName, tierId0, null);
-        VoucherHistory vh1 = voucherDao.claim(v.id, userId, userName, tierId1, null);
-        VoucherHistory vh2 = voucherDao.claim(v.id, userId, userName, null, null);
+        VoucherHistory vh0 = voucherDao.claim(v.id, userId, userName, tierId0, null, false);
+        VoucherHistory vh1 = voucherDao.claim(v.id, userId, userName, tierId1, null, false);
+        VoucherHistory vh2 = voucherDao.claim(v.id, userId, userName, null, null, false);
 
         Assertions.assertEquals(vh0.id, vh1.id);
         Assertions.assertEquals(vh0.voucherCode, vh1.voucherCode);

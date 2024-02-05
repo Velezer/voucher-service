@@ -86,6 +86,9 @@ public class VoucherService {
                     if (v.qtyClaim <= 0) {
                         return countClaimed < 1;
                     }
+                    if (v.isHidden) { // must be claimed
+                        return countClaimed > 0;
+                    }
                     return true;
                 })
                 .sorted((v1, v2) -> { // reverse (big max discount first)
@@ -122,7 +125,7 @@ public class VoucherService {
 
         List<String> tagIds = tagService.getTagIds(userId);
 
-        VoucherHistory vh = voucherDAO.claim(voucherId, userId, userName, tierId, tagIds);
+        VoucherHistory vh = voucherDAO.claim(voucherId, userId, userName, tierId, tagIds, false);
         return ViewClaimVoucherOas.valueOf(vh);
     }
 

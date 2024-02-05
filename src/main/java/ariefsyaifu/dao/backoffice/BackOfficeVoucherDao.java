@@ -60,6 +60,7 @@ public class BackOfficeVoucherDao {
         v.qtyRedeem = request.qtyRedeem;
         v.extendValidToInDays = request.extendValidToInDays;
         v.status = request.status;
+        v.isHidden = request.isHidden;
         if (!Optional.ofNullable(request.outlets).orElse(List.of()).isEmpty()) {
             v.outlets = request.outlets.stream()
                     .map(dto -> {
@@ -123,6 +124,7 @@ public class BackOfficeVoucherDao {
         v.validTo = request.validTo;
         v.imageUrl = request.imageUrl;
         v.detail = request.detail;
+        v.isHidden = request.isHidden;
         v.extendValidToInDays = request.extendValidToInDays;
         if (v.isActive()) {
             this.generateVoucherCodes(v.id, v.prefixCode, v.qtyClaim);

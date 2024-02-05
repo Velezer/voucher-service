@@ -134,6 +134,9 @@ public class Voucher extends Audit {
     @Column(name = "qty_redeemed", nullable = false)
     public Long qtyRedeemed = 0l;
 
+    @Column(name = "is_hidden", nullable = false)
+    public boolean isHidden = false;
+
     @Column(name = "extend_valid_to_in_days", nullable = false, columnDefinition = "int4 default 0")
     public Integer extendValidToInDays;
 

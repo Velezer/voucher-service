@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+
+import org.apache.kafka.common.KafkaException;
+
 import ariefsyaifu.dto.voucher.ViewVoucherRewardOas;
 import ariefsyaifu.model.Voucher;
 import ariefsyaifu.model.VoucherHistory;
@@ -50,7 +53,13 @@ public class VoucherDao {
 
     @Transactional
     @TransactionConfiguration(timeout = 30)
-    public VoucherHistory claim(String vid, String userId, String userName, String tierId, List<String> tagIds) {
+    public VoucherHistory claim(
+        String vid, 
+        String userId, 
+        String userName, 
+        String tierId, 
+        List<String> tagIds,
+        boolean canClaimHidden) {
         Voucher v = Voucher.findById(vid, LockModeType.PESSIMISTIC_WRITE);
         if (v == null) {
             throw new HttpException(400, "VOUCHER_NOT_FOUND");
@@ -65,6 +74,12 @@ public class VoucherDao {
                 .firstResult();
         if (vhClaimed != null) {
             return vhClaimed;
+        }
+        
+        if (!canClaimHidden) {
+            if (v.isHidden) {
+                throw new HttpException(400, "HIDDEN_VOUCHER");
+            }
         }
 
         if (v.qtyClaimed >= v.qtyClaim) {
@@ -140,7 +155,8 @@ public class VoucherDao {
                 v.image_url,
                 v.detail,
                 v.extend_valid_to_in_days,
-                v.qty_claim
+                v.qty_claim,
+                v.is_hidden
                 from voucher_schema.voucher v
                 left join voucher_schema.voucher_tier vt on vt.voucher_id = v.id
                 left join voucher_schema.voucher_tag vtg on vtg.voucher_id = v.id
@@ -199,6 +215,7 @@ public class VoucherDao {
             oas.detail = (String) o[16];
             oas.extendValidToInDays = o[17] == null ? null : ((Integer) o[17]);
             oas.qtyClaim = o[18] == null ? null : ((Long) o[18]);
+            oas.isHidden = (boolean) o[19];
             return oas;
         }).toList();
     }
