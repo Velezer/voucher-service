@@ -60,8 +60,8 @@ public class BackOfficeVoucherDao {
         v.qtyRedeem = request.qtyRedeem;
         v.extendValidToInDays = request.extendValidToInDays;
         v.status = request.status;
-        if (!Optional.ofNullable(request.voucherOutlets).orElse(List.of()).isEmpty()) {
-            v.outlets = request.voucherOutlets.stream()
+        if (!Optional.ofNullable(request.outlets).orElse(List.of()).isEmpty()) {
+            v.outlets = request.outlets.stream()
                     .map(dto -> {
                         VoucherOutlet vo = new VoucherOutlet();
                         vo.voucher = v;
@@ -70,8 +70,8 @@ public class BackOfficeVoucherDao {
                         return vo;
                     }).collect(Collectors.toList());
         }
-        if (!Optional.ofNullable(request.voucherTags).orElse(List.of()).isEmpty()) {
-            v.tags = request.voucherTags.stream()
+        if (!Optional.ofNullable(request.tags).orElse(List.of()).isEmpty()) {
+            v.tags = request.tags.stream()
                     .map(id -> {
                         VoucherTag vo = new VoucherTag();
                         vo.voucher = v;
@@ -129,8 +129,8 @@ public class BackOfficeVoucherDao {
         }
 
         v.status = request.status;
-        if (!Optional.ofNullable(request.voucherOutlets).orElse(List.of()).isEmpty()) {
-            v.outlets = request.voucherOutlets.stream()
+        if (!Optional.ofNullable(request.outlets).orElse(List.of()).isEmpty()) {
+            v.outlets = request.outlets.stream()
                     .map(dto -> {
                         VoucherOutlet vo = new VoucherOutlet();
                         vo.voucher = v;
@@ -139,8 +139,8 @@ public class BackOfficeVoucherDao {
                         return vo;
                     }).collect(Collectors.toList());
         }
-        if (!Optional.ofNullable(request.voucherTags).orElse(List.of()).isEmpty()) {
-            v.tags = request.voucherTags.stream()
+        if (!Optional.ofNullable(request.tags).orElse(List.of()).isEmpty()) {
+            v.tags = request.tags.stream()
                     .map(tagId -> {
                         VoucherTag vo = new VoucherTag();
                         vo.voucher = v;

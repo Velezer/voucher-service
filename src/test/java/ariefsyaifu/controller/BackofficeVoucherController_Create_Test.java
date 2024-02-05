@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import ariefsyaifu.dto.voucher.backoffice.ViewVoucherIdOas;
 import ariefsyaifu.model.CombinationUniqueCode;
@@ -60,10 +62,10 @@ class BackofficeVoucherController_Create_Test {
                 "prefixCode": "HEMAT",
                 "name": "voucherName",
                 "type": "AMOUNT",
-                "amount": 0,
+                "amount": 10,
                 "transactionType": "FIRST_VOUCHER",
-                "quota": 0,
-                "maxDiscount": 0,
+                "quota": 10,
+                "maxDiscount": 10,
                 "modeType": "DINE_IN",
                 "minSubtotal": 0,
                 "maxRedeemedCount": 1,
@@ -76,13 +78,13 @@ class BackofficeVoucherController_Create_Test {
                 "qtyRedeem": 1,
                 "extendValidToInDays": 0,
                 "status": "ACTIVE",
-                "voucherOutlets": [
+                "outlets": [
                   {
                     "id": "string",
                     "name": "string"
                   }
                 ],
-                "voucherTags": [
+                "tags": [
                   "string"
                 ],
                 "tiers": [
@@ -116,8 +118,45 @@ class BackofficeVoucherController_Create_Test {
 
   }
 
-  @Test
-  void testCreate_Duplicate() {
+  @ParameterizedTest
+  @ValueSource(strings = {
+      """
+          {
+            "prefixCode": "HEMAT",
+            "name": "voucherName",
+            "type": "AMOUNT",
+            "amount": 10,
+            "transactionType": "FIRST_VOUCHER",
+            "quota": 10,
+            "maxDiscount": 10,
+            "modeType": "DINE_IN",
+            "minSubtotal": 0,
+            "maxRedeemedCount": 1,
+            "usedDayType": "EVERYDAY",
+            "validFrom": "2022-03-10T12:15:50",
+            "validTo": "2024-03-10T12:15:50",
+            "imageUrl": "string",
+            "detail": "string",
+            "qtyClaim": 1,
+            "qtyRedeem": 1,
+            "extendValidToInDays": 0,
+            "status": "ACTIVE",
+            "outlets": [
+              {
+                "id": "string",
+                "name": "string"
+              }
+            ],
+            "tags": [
+              "string"
+            ],
+            "tiers": [
+              "string"
+            ]
+          }
+            """
+  })
+  void testCreate_Duplicate(String body) {
     Assertions.assertEquals(0, Voucher.count());
     Assertions.assertEquals(0, VoucherTier.count());
     Assertions.assertEquals(0, VoucherTag.count());
@@ -129,41 +168,7 @@ class BackofficeVoucherController_Create_Test {
         .given()
         .contentType(ContentType.JSON)
         .header("X-Consumer-Custom-ID", "{}")
-        .body("""
-            {
-                "prefixCode": "HEMAT",
-                "name": "voucherName",
-                "type": "AMOUNT",
-                "amount": 0,
-                "transactionType": "FIRST_VOUCHER",
-                "quota": 0,
-                "maxDiscount": 0,
-                "modeType": "DINE_IN",
-                "minSubtotal": 0,
-                "maxRedeemedCount": 1,
-                "usedDayType": "EVERYDAY",
-                "validFrom": "2022-03-10T12:15:50",
-                "validTo": "2024-03-10T12:15:50",
-                "imageUrl": "string",
-                "detail": "string",
-                "qtyClaim": 1,
-                "qtyRedeem": 1,
-                "extendValidToInDays": 0,
-                "status": "ACTIVE",
-                "voucherOutlets": [
-                  {
-                    "id": "string",
-                    "name": "string"
-                  }
-                ],
-                "voucherTags": [
-                  "string"
-                ],
-                "tiers": [
-                  "string"
-                ]
-              }
-                """)
+        .body(body)
         .post("/api/v1/backoffice/voucher")
         .andReturn();
 
@@ -175,41 +180,7 @@ class BackofficeVoucherController_Create_Test {
           .given()
           .contentType(ContentType.JSON)
           .header("X-Consumer-Custom-ID", "{}")
-          .body("""
-              {
-                  "prefixCode": "HEMAT",
-                  "name": "voucherName",
-                  "type": "AMOUNT",
-                  "amount": 0,
-                  "transactionType": "FIRST_VOUCHER",
-                  "quota": 0,
-                  "maxDiscount": 0,
-                  "modeType": "DINE_IN",
-                  "minSubtotal": 0,
-                  "maxRedeemedCount": 1,
-                  "usedDayType": "EVERYDAY",
-                  "validFrom": "2022-03-10T12:15:50",
-                  "validTo": "2024-03-10T12:15:50",
-                  "imageUrl": "string",
-                  "detail": "string",
-                  "qtyClaim": 1,
-                  "qtyRedeem": 1,
-                  "extendValidToInDays": 0,
-                  "status": "ACTIVE",
-                  "voucherOutlets": [
-                    {
-                      "id": "string",
-                      "name": "string"
-                    }
-                  ],
-                  "voucherTags": [
-                    "string"
-                  ],
-                  "tiers": [
-                    "string"
-                  ]
-                }
-                  """)
+          .body(body)
           .post("/api/v1/backoffice/voucher")
           .andReturn();
 

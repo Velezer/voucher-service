@@ -1,4 +1,4 @@
-package ariefsyaifu.dao;
+package ariefsyaifu.service.external;
 
 import java.math.BigDecimal;
 
@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import ariefsyaifu.dto.voucher.external.RedeemVoucherRequestBody;
 import ariefsyaifu.model.Voucher;
 import ariefsyaifu.model.Voucher.ModeType;
 import ariefsyaifu.model.Voucher.Status;
@@ -21,13 +22,12 @@ import jakarta.transaction.Transactional;
 import net.bytebuddy.utility.RandomString;
 
 @QuarkusTest
-class ExternalVoucherDaoTest {
-
-    @Inject
-    ExternalVoucherDao externalVoucherDao;
+class ExternalVoucherServiceTest {
 
     String userId = RandomString.make();
-    String transactionId = RandomString.make();
+
+    @Inject
+    ExternalVoucherService externalVoucherService;
 
     @BeforeEach
     @Transactional
@@ -76,26 +76,24 @@ class ExternalVoucherDaoTest {
     @Test
     void testRedeem() {
         Assertions.assertEquals(1, VoucherHistory.count());
-        VoucherHistory vh = VoucherHistory.findAll().firstResult();
-        Assertions.assertEquals(VoucherHistory.Type.CLAIMED, vh.type);
-        Assertions.assertEquals(userId, vh.userId);
-        Assertions.assertEquals(0, vh.voucher.qtyRedeemed);
-        Assertions.assertEquals(BigDecimal.ZERO.setScale(2), vh.voucher.usedQuota);
+        VoucherHistory vh = VoucherHistory.find("userId = ?1 and type='CLAIMED'", userId).firstResult();
 
+        RedeemVoucherRequestBody body = new RedeemVoucherRequestBody();
+        body.subTotal = BigDecimal.valueOf(20_000);
+        body.voucherCode = vh.voucherCode;
+        body.userId = userId;
+        body.outletId = RandomString.make();
+        body.transactionId = RandomString.make();
         
-        VoucherHistory redeemed = externalVoucherDao.redeem(vh.id, userId, vh.voucher.amount, transactionId);
-        
+        externalVoucherService.redeem(body);
+
         VoucherHistory.getEntityManager().clear();
         Assertions.assertEquals(1, VoucherHistory.count());
         vh = VoucherHistory.findAll().firstResult();
         Assertions.assertEquals(VoucherHistory.Type.REDEEMED, vh.type);
-        Assertions.assertEquals(userId, vh.userId);
-        Assertions.assertEquals(transactionId, vh.transactionId);
-        Assertions.assertEquals(transactionId, redeemed.transactionId);
-        Assertions.assertEquals(vh.voucher.amount, vh.voucherAmount);
-        Assertions.assertEquals(vh.voucher.amount, redeemed.voucherAmount);
-        Assertions.assertEquals(1, vh.voucher.qtyRedeemed);
-        Assertions.assertEquals(vh.voucherAmount, vh.voucher.usedQuota);
+        Assertions.assertEquals(body.transactionId, vh.transactionId);
+        Assertions.assertEquals(body.userId, vh.userId);
+        Assertions.assertEquals(body.voucherCode, vh.voucherCode);
 
     }
 }

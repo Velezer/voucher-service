@@ -28,8 +28,8 @@ public class ViewVoucherOas extends CreateVoucherRequestBody {
         oas.qtyRedeem = v.qtyRedeem;
         oas.extendValidToInDays = v.extendValidToInDays;
         oas.status = v.status;
-        oas.voucherOutlets = v.outlets.stream().map(o -> OutletDto.valueOf(o)).toList();
-        oas.voucherTags = v.tags.stream().map(o -> o.tagId).toList();
+        oas.outlets = v.outlets.stream().map(o -> OutletDto.valueOf(o)).toList();
+        oas.tags = v.tags.stream().map(o -> o.tagId).toList();
         oas.tiers = v.tiers.stream().map(o -> o.tierId).toList();
         return oas;
     }

@@ -33,6 +33,11 @@ public class BackOfficeVoucherService {
         if (!request.prefixCode.equals(request.prefixCode.toUpperCase())) {
             throw new HttpException(400, "PREFIX_CODE_MUST_BE_UPPER_CASE");
         }
+        if (request.type.equals(Voucher.Type.AMOUNT)) {
+            if (request.quota.compareTo(request.amount) < 0) {
+                throw new HttpException(400, "QUOTA_TOO_LESS");
+            }
+        }
         Voucher v = backOfficeVoucherDAO.create(request, userId);
         return ViewVoucherIdOas.valueOf(v);
     }

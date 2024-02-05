@@ -1,6 +1,7 @@
 package ariefsyaifu.dao;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.awaitility.Awaitility;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import ariefsyaifu.dto.voucher.ViewVoucherRewardOas;
 import ariefsyaifu.model.Voucher;
 import ariefsyaifu.model.Voucher.ModeType;
 import ariefsyaifu.model.Voucher.Status;
@@ -78,6 +80,18 @@ class VoucherDaoTest {
     void afterEach() {
         VoucherHistory.deleteAll();
         Voucher.deleteAll();
+    }
+
+    @Test
+    void testFindActiveVouchers(){
+        List<ViewVoucherRewardOas> vouchers = voucherDao.findActiveVouchers(false, false, null, null, null);
+        Assertions.assertEquals(1, vouchers.size());
+        vouchers = voucherDao.findActiveVouchers(false, false, List.of(RandomString.make()), null, null);
+        Assertions.assertEquals(1, vouchers.size());
+        vouchers = voucherDao.findActiveVouchers(false, false, null, RandomString.make(), null);
+        Assertions.assertEquals(1, vouchers.size());
+        vouchers = voucherDao.findActiveVouchers(false, false, List.of(RandomString.make()), RandomString.make(), null);
+        Assertions.assertEquals(1, vouchers.size());
     }
 
     @Test

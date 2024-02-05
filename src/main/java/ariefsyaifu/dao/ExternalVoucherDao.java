@@ -42,6 +42,7 @@ public class ExternalVoucherDao {
 
         Voucher v = Voucher.findById(vh.voucher.id, LockModeType.PESSIMISTIC_WRITE);
         v.qtyRedeemed += 1;
+        v.usedQuota = v.usedQuota.add(voucherAmount);
         v.persist();
 
         vh.type = VoucherHistory.Type.REDEEMED;

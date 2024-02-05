@@ -1,17 +1,20 @@
 package ariefsyaifu.controller;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import ariefsyaifu.client.TagClient;
 import ariefsyaifu.dto.voucher.ViewClaimVoucherOas;
+import ariefsyaifu.dto.voucher.ViewVoucherRewardOas;
 import ariefsyaifu.model.Voucher;
 import ariefsyaifu.model.VoucherHistory;
 import ariefsyaifu.model.Voucher.ModeType;
@@ -33,6 +36,7 @@ import net.bytebuddy.utility.RandomString;
 class VoucherControllerTest {
 
     String userId = RandomString.make();
+    String tierId = RandomString.make();
 
     @InjectMock
     @RestClient
@@ -80,6 +84,28 @@ class VoucherControllerTest {
     void afterEach() {
         VoucherHistory.deleteAll();
         Voucher.deleteAll();
+    }
+
+    @Test
+    void testList() {
+        Assertions.assertEquals(1, Voucher.count());
+        Assertions.assertEquals(2, VoucherHistory.count("type='AVAILABLE'"));
+
+        Response r = RestAssured
+                .given()
+                .contentType(ContentType.JSON)
+                .header("X-Consumer-Custom-ID", new JsonObject()
+                        .put("userId", userId)
+                        .put("tierId", tierId)
+                        .encode())
+                .get("/api/v1/voucher/")
+                .andReturn();
+
+        Assertions.assertEquals(200, r.getStatusCode());
+
+        List<ViewVoucherRewardOas> ras = Arrays.asList(r.as(ViewVoucherRewardOas[].class));
+        Assertions.assertEquals(1, ras.size());
+
     }
 
     @Test

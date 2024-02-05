@@ -159,10 +159,10 @@ public class VoucherDao {
         sb.append("""
                 and (vt is null or vt.tier_id = :tierId)
                 and (vtg is null or vtg.tag_id in :tagIds)
-                """);
+                    """);
 
         params.and("tierId", tierId);
-        params.and("tagIds", tagIds);
+        params.and("tagIds", Optional.ofNullable(tagIds).orElse(List.of()).isEmpty() ? List.of("") : tagIds);
 
         if (FormatUtil.isSearchInput(search, false)) {
             sb.append("""

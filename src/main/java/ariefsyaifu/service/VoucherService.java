@@ -13,18 +13,13 @@ import org.slf4j.LoggerFactory;
 import ariefsyaifu.dao.VoucherDao;
 import ariefsyaifu.dto.voucher.ViewClaimVoucherOas;
 import ariefsyaifu.dto.voucher.ViewVoucherRewardOas;
-import ariefsyaifu.model.Voucher;
 import ariefsyaifu.model.VoucherHistory;
 import ariefsyaifu.model.VoucherOutlet;
 import ariefsyaifu.util.DateUtil;
-import ariefsyaifu.util.FormatUtil;
-import io.quarkus.panache.common.Parameters;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.HttpException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
 
 @ApplicationScoped
 public class VoucherService {
@@ -33,18 +28,15 @@ public class VoucherService {
     @Inject
     public VoucherService(
             VoucherDao voucherDAO,
-            TagService tagService,
-            EntityManager em
+            TagService tagService
 
     ) {
         this.voucherDAO = voucherDAO;
         this.tagService = tagService;
-        this.em = em;
     }
 
     private TagService tagService;
     private VoucherDao voucherDAO;
-    private EntityManager em;
 
     public List<ViewVoucherRewardOas> list(JsonObject joCustomId, String search) throws ParseException {
         String userId = joCustomId.getString("userId");
@@ -64,7 +56,7 @@ public class VoucherService {
                 search);
 
         vouchers = vouchers.stream()
-                .filter(v -> v.usedQuota.compareTo(v.quota) >= 0)
+                .filter(v -> v.usedQuota.compareTo(v.quota) < 0)
                 .collect(Collectors.toList());
 
         List<String> filteredVoucherIds = vouchers.stream().map(v -> v.id).collect(Collectors.toList());

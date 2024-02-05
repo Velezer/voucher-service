@@ -25,16 +25,19 @@ public class CreateVoucherRequestBody {
     @NotNull
     public Voucher.Type type;
     
-    @Min(0)
+    @Min(1)
+    @Schema(example = "10000")
     public BigDecimal amount;
     
     @NotNull
     public Voucher.TransactionType transactionType;
     
-    @Min(0)
+    @Min(1)
+    @Schema(example = "100000")
     public BigDecimal quota;
     
-    @Min(0)
+    @Min(1)
+    @Schema(example = "10000")
     public BigDecimal maxDiscount;
     
     @NotNull
@@ -50,10 +53,11 @@ public class CreateVoucherRequestBody {
     public Voucher.UsedDayType usedDayType;
 
     @NotNull
+    @Schema(example = "2024-02-04T12:15:50")
     public LocalDateTime validFrom;
     
     @NotNull
-    @Schema(example = "2025-03-10T12:15:50")
+    @Schema(example = "2024-12-10T12:15:50")
     public LocalDateTime validTo;
 
     public String imageUrl;
@@ -70,12 +74,13 @@ public class CreateVoucherRequestBody {
     public Integer extendValidToInDays;
 
     @NotNull
+    @Schema(example = "ACTIVE")
     public Voucher.Status status;
 
-    public List<OutletDto> voucherOutlets;
+    public List<OutletDto> outlets;
 
     @Schema(example = "[\"FEB\"]")
-    public List<String> voucherTags;
+    public List<String> tags;
     
     @Schema(example = "[\"GOLDEN\"]")
     public List<String> tiers;

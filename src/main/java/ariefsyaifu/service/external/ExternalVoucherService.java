@@ -66,17 +66,23 @@ public class ExternalVoucherService {
                 .find("""
                         deletedAt is null
                         and voucherCode = ?1
-                        and userId = ?2
-                        and voucher.status = 'ACTIVE'
                             """,
-                        params.voucherCode,
-                        params.userId)
+                        params.voucherCode)
                 .firstResult();
         if (vh == null) {
             throw new HttpException(400, "VOUCHER_NOT_CLAIMED");
         }
+        if (!vh.voucher.isActive()) {
+            throw new HttpException(400, "VOUCHER_NOT_ACTIVE");
+        }
         if (vh.isRedeemed()) {
             throw new HttpException(400, "VOUCHER_HAS_BEEN_REDEEMED");
+        }
+        if (!vh.isClaimed()) {
+            throw new HttpException(400, "VOUCHER_NOT_CLAIMED");
+        }
+        if (!vh.userId.equalsIgnoreCase(params.userId)) {
+            throw new HttpException(400, "VOUCHER_CLAIMED_BY_ANOTHER_PERSON");
         }
 
         if (params.subTotal.compareTo(vh.voucher.minSubtotal) < 0) {
@@ -121,7 +127,7 @@ public class ExternalVoucherService {
                 voucherAmount,
                 params.transactionId);
 
-        voucherProducer.redeemedVoucher(vh);
+        voucherProducer.redeemedVoucher(redeemed);
 
         return ViewRedeemedVoucherOas.valueOf(redeemed);
     }

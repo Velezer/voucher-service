@@ -61,10 +61,10 @@ class BackofficeVoucherController_Empty_Test {
                 "prefixCode": "HEMAT",
                 "name": "voucherName",
                 "type": "AMOUNT",
-                "amount": 0,
+                "amount": 10,
                 "transactionType": "FIRST_VOUCHER",
-                "quota": 0,
-                "maxDiscount": 0,
+                "quota": 10,
+                "maxDiscount": 10,
                 "modeType": "DINE_IN",
                 "minSubtotal": 0,
                 "maxRedeemedCount": 1,
@@ -77,13 +77,13 @@ class BackofficeVoucherController_Empty_Test {
                 "qtyRedeem": 1,
                 "extendValidToInDays": 0,
                 "status": "ACTIVE",
-                "voucherOutlets": [
+                "outlets": [
                   {
                     "id": "string",
                     "name": "string"
                   }
                 ],
-                "voucherTags": [
+                "tags": [
                   "string"
                 ],
                 "tiers": [
