@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import ariefsyaifu.dao.VoucherDao;
 import ariefsyaifu.dto.voucher.external.RedeemVoucherRequestBody;
-import ariefsyaifu.exception.AbortException;
 import ariefsyaifu.service.external.ExternalVoucherService;
 import io.smallrye.reactive.messaging.annotations.Blocking;
 import io.vertx.core.json.JsonArray;
@@ -43,7 +42,7 @@ public class VoucherConsumer {
 
 	@Incoming("claim-voucher-in")
 	@Blocking
-	@Retry(delay = 1000, abortOn = AbortException.class)
+	@Retry(delay = 1000, abortOn = KafkaException.class)
 	public void claimVoucher(String message) {
 		logger.info("claimVoucher message={}", message);
 		JsonObject payload = new JsonObject(message);
@@ -64,13 +63,13 @@ public class VoucherConsumer {
 
 	@Incoming("redeem-voucher-in")
 	@Blocking
-	@Retry(delay = 1000, abortOn = AbortException.class)
+	@Retry(delay = 1000, abortOn = KafkaException.class)
 	public void redeemVoucher(String message) {
 		JsonObject payload = new JsonObject(message);
 		RedeemVoucherRequestBody rb = payload.mapTo(RedeemVoucherRequestBody.class);
 		Set<ConstraintViolation<RedeemVoucherRequestBody>> violations = validator.validate(rb);
 		for (ConstraintViolation<RedeemVoucherRequestBody> violation : violations) {
-			throw new AbortException(violation.getMessage());
+			throw new KafkaException(violation.getPropertyPath() + " " + violation.getMessage());
 		}
 		externalVoucherService.redeem(rb);
 	}
